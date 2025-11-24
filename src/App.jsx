@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Search from "./components/Search";
 import Spinner from "./components/spinner";
+import MovieCard from "./components/MovieCard";
 
 const API_BASE_URL = "https://api.themoviedb.org/3";
 
@@ -22,14 +23,14 @@ const App = () => {
   const [movieList, setMovieList] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  const fetchMovies = async () => {
-
-
-
+  const fetchMovies = async (query = "") => {
     setIsLoading(true);
-    setErrorMessage('');
+    setErrorMessage("");
     try {
-      const endpoint = `${API_BASE_URL}/discover/movie?sort_by=popularity.desc`;
+      const endpoint = query
+        ? `${API_BASE_URL}/search/movie?query=${encodeURIComponent(query)}`
+        : `${API_BASE_URL}/discover/movie?sort_by=popularity.desc`;
+
       const response = await fetch(endpoint, API_OPTIONS);
 
       if (!response.ok) {
@@ -48,14 +49,14 @@ const App = () => {
     } catch (error) {
       console.error(`Error fetching movies:${error}`);
       setErrorMessage("Error fetching movies.Please try again later.");
-    }finally{
+    } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchMovies();
-  }, []);
+    fetchMovies(searchTerm);
+  }, [searchTerm]);
 
   return (
     <main>
@@ -74,23 +75,17 @@ const App = () => {
         <section className="all-movies">
           <h2 className="mt-10">All movies</h2>
 
-          {isLoading? (
-           <Spinner/>
-          ) : errorMessage?(
+          {isLoading ? (
+            <Spinner />
+          ) : errorMessage ? (
             <p className="text-red-500">{errorMessage}</p>
-          ):(
+          ) : (
             <ul>
-              {
-                movieList.map((movie)=>(
-                  <p key={movie.id}  className="text-white">{movie.title}</p>
-                ))
-              }
+              {movieList.map((movie) => (
+                <MovieCard key={movie.id} movie={movie} />
+              ))}
             </ul>
-          )
-
-
-          }
-
+          )}
         </section>
       </div>
     </main>
